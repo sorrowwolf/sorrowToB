@@ -1,15 +1,38 @@
- <template>
-   <div class="homepage-container">
-     <a-layout :style="{background: '#fff'}">
-      <a-layout-header class="header">
-        <div class="page-title">
-          慕课乐高
-        </div>
-      </a-layout-header>
-      <a-layout-content class="home-layout">
+<template>
+  <div class="content-container">
+    <template-list :list="testData"></template-list>
+  </div>
+</template>
 
-      </a-layout-content>
-      <a-layout-footer>Footer</a-layout-footer>
-    </a-layout>
-   </div>
- </template>
+<script lang="ts">
+import { computed, defineComponent } from 'vue';
+import { useStore } from 'vuex';
+import TemplateList from '../components/TemplateList.vue';
+import { GlobalDataProps } from '../store/index';
+export default defineComponent({
+  components: {
+    TemplateList
+  },
+  setup() {
+    const store = useStore<GlobalDataProps>();
+    const testData = computed(() => store.state.templates.data);
+    return {
+      testData
+    };
+  }
+});
+</script>
+
+<style>
+.page-title {
+  color: #fff;
+}
+.content-container {
+  background: #fff;
+  padding: 0 24px 24px 30px;
+  min-height: 85vh;
+  max-width: 1200px;
+  margin: 50px auto;
+  width: 100%;
+}
+</style>
