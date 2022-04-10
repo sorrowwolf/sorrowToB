@@ -1,6 +1,7 @@
 import { Module } from "vuex";
 import { v4 as uuidv4 } from 'uuid';
 import { GlobalDataProps } from "./index";
+import { TextComponentProps } from "@/defaultProps";
 
 export interface EditorProps {
   // 供中间编辑器渲染的数组
@@ -9,7 +10,7 @@ export interface EditorProps {
   currentElement: string;
 }
 
-interface ComponentData {
+export interface ComponentData {
   // 这个元素的属性，属性详情见下面
   props: {
     [key: string]: any;
@@ -30,6 +31,24 @@ const editor: Module<EditorProps, GlobalDataProps> = {
     components: testComponents,
     currentElement: ''
   },
+  mutations: {
+    addComponent(state, props: Partial<TextComponentProps>) {
+      const newComponent: ComponentData = {
+        id: uuidv4(),
+        name: 'l-text',
+        props,
+      };
+      state.components.push(newComponent);
+    },
+    setActive(state, currentId: string) {
+      state.currentElement = currentId;
+    },
+  },
+  getters: {
+    getCurrentElement: (state) => {
+      return state.components.find(component => component.id === state.currentElement);
+    }
+  }
 };
 
 export default editor;
