@@ -3,43 +3,83 @@
     <div
       v-for="(value ,key) in finalProps"
       :key="key"
-      class="props-item"
+      class="prop-item"
     >
-      <component
-        v-if="value"
-        :is="value.component"
-        :value="value.value"
-      />
+      <span class="label" v-if="value.text">{{ value.text }}</span>
+      <div class="prop-component">
+        <component
+          v-if="value"
+          :is="value.component"
+          :[value.valueProp]="value.value"
+          v-bind="value.extraProps"
+          v-on="value.events"
+        >
+          <template v-if="value.options">
+            <component
+              :is="value.subComponent"
+              v-for="(option, k) in value.options"
+              :key="k"
+              :value="option.value"
+            >
+              <render-vnode :vNode="option.text"></render-vnode>
+            </component>
+          </template>
+        </component>
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import { TextComponentProps } from '@/defaultProps';
-import { computed, defineComponent, PropType } from 'vue';
+import { computed, defineComponent, PropType, VNode } from 'vue';
 import { reduce } from 'lodash-es';
-import { mapPropsToForms, PropsToForms } from '../propsMap';
-
+import { mapPropsToForms } from '../propsMap';
+import RenderVnode from './RenderVnode';
+interface FormProps {
+  component: string;
+  subComponent?: string;
+  value: string;
+  extraProps?: { [key: string]: any };
+  text?: string;
+  options?: { text: string | VNode; value: any }[];
+  valueProp: string;
+  eventName: string;
+  events: { [key: string]: (e: any) => void };
+}
 export default defineComponent({
   name: 'props-table',
+  emits: ['change'],
   props: {
     props: {
       type: Object as PropType<TextComponentProps>,
       required: true,
     }
   },
-  setup(props) {
+  components: {
+    RenderVnode,
+  },
+  setup(props, context) {
     console.log(props.props);
     const finalProps = computed(() => {
       return reduce(props.props, (result, value, key) => {
         const newKey = key as keyof TextComponentProps;
         const item = mapPropsToForms[newKey];
         if (item) {
-          item.value = value;
-          result[newKey] = item;
+          const { valueProp = 'value', eventName = 'change', initalTransform, afterTransform } = item;
+          const newItem: FormProps = {
+            ...item,
+            value: initalTransform ? initalTransform(value) : value,
+            valueProp,
+            eventName,
+            events: {
+              [eventName]: (e: any) => { context.emit('change', { key, value: afterTransform? afterTransform(e) : e });}
+            }
+          };
+          result[newKey] = newItem;
         }
         return result;
-      }, {} as PropsToForms);
+      }, {} as { [key: string]: FormProps });
     });
     console.log(finalProps);
     return {
@@ -48,3 +88,18 @@ export default defineComponent({
   },
 });
 </script>
+
+<style>
+.prop-item {
+  display: flex;
+  margin-bottom: 10px;
+  align-items: center;
+}
+.label {
+  width: 28%;
+}
+.prop-component {
+  width: 70%;
+}
+
+</style>

@@ -22,6 +22,7 @@ export default defineComponent({
   name: 'components-list',
   emits: ['on-item-click'],
   setup(props, context) {
+    // eslint-disable-next-line
     const onItemClick = (data: any) => {
       context.emit('on-item-click', data);
     };
