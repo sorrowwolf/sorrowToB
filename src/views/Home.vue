@@ -1,5 +1,6 @@
 <template>
   <div class="content-container">
+    <uploader />
     <template-list :list="testData"></template-list>
   </div>
 </template>
@@ -9,9 +10,11 @@ import { computed, defineComponent } from 'vue';
 import { useStore } from 'vuex';
 import TemplateList from '../components/TemplateList.vue';
 import { GlobalDataProps } from '../store/index';
+import uploader from '@/components/Uploader.vue';
 export default defineComponent({
   components: {
-    TemplateList
+    TemplateList,
+    uploader
   },
   setup() {
     const store = useStore<GlobalDataProps>();
